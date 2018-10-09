@@ -14,7 +14,7 @@ You can install Consul Imex in several ways:
 
 * Executable phar file (requires PHP >=5.5.9)
 * Docker image (requires [Docker](https://www.docker.com/) engine)
-* Composer dependancy (requires [Git](https://git-scm.com/), [Composer](https://getcomposer.org/) and PHP >=5.5.9)
+* Composer dependency (requires [Git](https://git-scm.com/), [Composer](https://getcomposer.org/) and PHP >=5.5.9)
 * Single PHP project (requires [Git](https://git-scm.com/), [Composer](https://getcomposer.org/) and PHP >=5.5.9)
 
 ### Install as an executable phar file
@@ -81,7 +81,7 @@ See [Notices for Docker Usage](#notices-for-docker-usage) for detailed informati
 
 * **--url (-u):** Consul server url.
 * **--prefix (-p):** Path prefix.
-
+* **--consul-token (-c):** Consul token.
 
 ### Import
 
@@ -97,6 +97,7 @@ See [Notices for Docker Usage](#notices-for-docker-usage) for detailed informati
 
 * **--url (-u):** Consul server url.
 * **--prefix (-p):** Path prefix.
+* **--consul-token (-c):** Consul token.
 
 ### Copy
 
@@ -113,6 +114,7 @@ See [Notices for Docker Usage](#notices-for-docker-usage) for detailed informati
 
 * **--source-server (-s):** Source server URL.
 * **--target-server (-t):** Target server URL. If omitted, source server is used as target server.
+* **--consul-token (-c):** Consul token.
 
 ## Examples
 
@@ -154,6 +156,14 @@ Copy all keys to another server:
 
 ## Notices for Docker Usage
 
+### Docker parameters
+
+- **[--rm](https://docs.docker.com/engine/reference/run/#clean-up---rm)**: Run once then clean up
+- **[\`pwd\`:/consul-imex](https://docs.docker.com/engine/reference/run/##volume-shared-filesystems)**: Mount a host directory to the container
+- **[-u \`id -u\`:\`id -g\`](https://docs.docker.com/engine/reference/run/#user)**: Set current user and group id to the container
+- **[--net=host](https://docs.docker.com/engine/reference/run/#network-settings)**: Share the host’s network stack and all interfaces with container
+- **[-it](https://docs.docker.com/engine/reference/run/#foreground)**: Make container interactive
+
 ### Input/Output File Location
 
 To use `import` and `export` commands with docker, the input/output files must be accessible by the container. The default working directory of the image is `/consul-imex` and input/output files are placed under this directory by default.
@@ -162,7 +172,7 @@ To use `import` and `export` commands with docker, the input/output files must b
 
 **Example 1:** Mount a host directory to the container for `export` operation, then the container will create `my-data.json` file in the host directory.
 
-    $ docker run -it -v `pwd`:/consul-imex sozpinar/consul-imex export -u 192.168.1.20:8500 -p /foo/bar my-data.json
+    $ docker run --rm -it -v `pwd`:/consul-imex -u `id -u`:`id -g` sozpinar/consul-imex export -u 192.168.1.20:8500 -p /foo/bar my-data.json
     93 keys are fetched.
 
 **Example 2:** Copy the output file to your working directory after `export` operation.
@@ -175,12 +185,12 @@ To use `import` and `export` commands with docker, the input/output files must b
 
 **Example 1:** Mount a host directory to the container for `import` operation, then the container will read `my-data.json` file from the host directory.
 
-    $ docker run -it -v `pwd`:/consul-imex sozpinar/consul-imex import -u 192.168.1.20:8500 -p /new/prefix my-data.json
+    $ docker run --rm -it -v `pwd`:/consul-imex sozpinar/consul-imex import -u 192.168.1.20:8500 -p /new/prefix my-data.json
     93 keys are stored. (25 new directories are created.)
 
 **Example 2:** Mount a file to the container and use it for `import` operation. This method does not require the input file to be placed in the default working directory.
 
-    $ docker run -it -v `pwd`/my-data.json:/my-data.json sozpinar/consul-imex import -u 192.168.1.20:8500 -p /new/prefix -v /my-data.json
+    $ docker run --rm -it -v `pwd`/my-data.json:/my-data.json sozpinar/consul-imex import -u 192.168.1.20:8500 -p /new/prefix -v /my-data.json
     93 keys are stored. (25 new directories are created.)
 
 ### Network Configuration
@@ -189,7 +199,7 @@ If your Consul service is in a private network or does not have a public URL, yo
 
 #### Example
 
-    docker run -it --net=host sozpinar/consul-imex copy -s http://localhost:8500 -t http://anotherhost:8500
+    docker run --rm -it --net=host sozpinar/consul-imex copy -s http://localhost:8500 -t http://anotherhost:8500
 
 If the default docker network type is `bridge` then the running container does not recognize 'localhost'. So we simply add `--net=host` argument to make the container to use the network of the host machine.
 
