@@ -22,6 +22,7 @@ class Application extends BaseApplication
             new Command\ImportCommand(),
             new Command\ExportCommand(),
             new Command\CopyCommand(),
+            new Command\DiffCommand(),
         ]);
         $this->setDefaultCommand('help');
     }

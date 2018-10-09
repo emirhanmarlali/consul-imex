@@ -7,6 +7,7 @@ Consul-Imex is a simple import/export tool for [Consul](https://www.consul.io/) 
 * Copy keys:
   - from a prefix to another prefix.
   - from a server to another server under a specified prefix.
+* Compare two sources and export keys different from second source's keys
 
 ## Installation
 
@@ -115,6 +116,23 @@ See [Notices for Docker Usage](#notices-for-docker-usage) for detailed informati
 * **--source-server (-s):** Source server URL.
 * **--target-server (-t):** Target server URL. If omitted, source server is used as target server.
 * **--consul-token (-c):** Consul token.
+    
+### Diff
+
+#### Usage:
+
+    consul-imex diff [options] <source> <other> <file>
+
+#### Arguments:
+
+* **source:** Source prefix.
+* **other:** Other prefix.
+
+#### Options:
+
+* **--source-server (-s):** Source server URL.
+* **--other-server (-o):** Other server URL. If omitted, source server is used as other server.
+* **--consul-token (-c):** Consul token.
 
 ## Examples
 
@@ -153,6 +171,21 @@ Copy all keys to another server:
     492 keys are stored. (108 new directories are created.)
     Operation completed.
 
+### Diff
+
+Get different keys of `/old/prefix` from `/new/prefix`:
+
+    $ consul-imex diff -s http://localhost:8500 /old/prefix /new/prefix difference.json
+    93 keys are fetched.
+    124 keys are fetched.
+    Operation completed.
+    
+Get different keys of `/old/prefix` from `/new/prefix` which is in another server:
+
+    $ consul-imex diff -s http://localhost:8500 -o http://anotherhost:8500 /old/prefix /new/prefix difference.json
+    93 keys are fetched.
+    124 keys are fetched.
+    Operation completed.
 
 ## Notices for Docker Usage
 
