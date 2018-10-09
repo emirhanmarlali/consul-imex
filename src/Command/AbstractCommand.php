@@ -43,6 +43,12 @@ abstract class AbstractCommand extends Command
     protected $prefix = '';
 
     /**
+     * Consul token for current operation.
+     * @var string
+     */
+    protected $consulToken = '';
+
+    /**
      * HTTP Client
      * @var \GuzzleHttp\Client
      */
@@ -62,6 +68,7 @@ abstract class AbstractCommand extends Command
         $this->addArgument('file', InputArgument::REQUIRED);
         $this->addOption('url', 'u', InputOption::VALUE_REQUIRED, 'Consul server url.', self::DEFAULT_URL);
         $this->addOption('prefix', 'p', InputOption::VALUE_REQUIRED, 'Path prefix.', '');
+        $this->addOption('consul-token', 'c', InputOption::VALUE_OPTIONAL, 'Consul Token.');
     }
 
     /**
@@ -69,8 +76,11 @@ abstract class AbstractCommand extends Command
      */
     protected function initialize(InputInterface $input, OutputInterface $output)
     {
-        $this->healthCheck($input);
+        if ($input->getOption('consul-token') !== null) {
+            $this->consulToken = $input->getOption('consul-token');
+        }
 
+        $this->healthCheck($input);
         $this->prefix = trim($input->getOption('prefix'), '/');
         if ('' !== $this->prefix) {
             $this->prefix .= '/';
@@ -119,7 +129,7 @@ abstract class AbstractCommand extends Command
     public function healthCheck(InputInterface $input)
     {
         $server   = $input->getOption('url');
-        $response = $this->getHttpClient()->get($server . '/v1/health/service/consul', ['exceptions' => false]);
+        $response = $this->getHttpClient()->get($server . '/v1/health/service/consul', ['exceptions' => false, 'headers' => $this->headers()]);
         if ($response->getStatusCode() != 200) {
             throw new RuntimeException("Consul server connection failed for '{$server}'.");
         }
@@ -143,5 +153,13 @@ abstract class AbstractCommand extends Command
     public function getFullKey($key)
     {
         return $this->prefix . $key;
+    }
+
+    public function headers(array $headers = []){
+        $headers = is_array($headers) ? $headers : [];
+        if(!empty($this->consulToken) && is_string($this->consulToken)) {
+            $headers["X-Consul-Token"] = $this->consulToken;
+        }
+        return $headers;
     }
 }

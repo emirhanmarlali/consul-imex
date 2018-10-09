@@ -107,13 +107,7 @@ class ImportCommand extends AbstractCommand
     {
         $this->getOutput()->write("Set key: <comment>{$this->getFullKey($key)}</comment> ... ", false, OutputInterface::VERBOSITY_VERBOSE);
         /* @var $response \Psr\Http\Message\ResponseInterface */
-        $response = $this->getHttpClient()->put(
-            $this->createUri($key),
-            [
-                'body'       => $value,
-                'exceptions' => false,
-            ]
-        );
+        $response = $this->getHttpClient()->put($this->createUri($key), ['body' => $value, 'exceptions' => false, 'headers' => $this->headers(),]);
 
         if ($response->getStatusCode() == 200) {
             $this->getOutput()->writeln('<info>OK</info>', OutputInterface::VERBOSITY_VERBOSE);

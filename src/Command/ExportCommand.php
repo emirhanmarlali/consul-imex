@@ -58,14 +58,14 @@ class ExportCommand extends AbstractCommand
 
     /**
      * Get the keys under current prefix from Consul.
-     * @throws \Gamegos\ConsulImex\ExportException
+     * @throws \Gamegos\ConsulImex\Command\ExportException
      * @return array
      */
     protected function getKeys()
     {
         $uri = $this->createUri('?keys');
         /* @var $response \Psr\Http\Message\ResponseInterface */
-        $response = $this->getHttpClient()->get($uri, ['exceptions' => false]);
+        $response = $this->getHttpClient()->get($uri, ['exceptions' => false, 'headers' => $this->headers()]);
         if ($response->getStatusCode() != 200) {
             throw new ExportException(
                 sprintf('Consul API request returned %d (%s).', $response->getStatusCode(), $uri)
@@ -85,7 +85,7 @@ class ExportCommand extends AbstractCommand
     }
 
     /**
-     * Fetch a value from Consul into a buffer with reccursive index.
+     * Fetch a value from Consul into a buffer with recursive index.
      * @param  array $buffer Buffer that the value will be added in.
      * @param  string $path Path of a key that is relative to current prefix.
      * @return bool
@@ -101,7 +101,7 @@ class ExportCommand extends AbstractCommand
 
         $uri = $this->createUri($path . '?raw');
         /* @var $response \Psr\Http\Message\ResponseInterface */
-        $response = $this->getHttpClient()->get($uri, ['exceptions' => false]);
+        $response = $this->getHttpClient()->get($uri, ['exceptions' => false, 'headers' => $this->headers()]);
         if ($response->getStatusCode() == 200) {
             $container[basename($path)] = $response->getBody()->getContents();
             $this->getOutput()->writeln('<info>OK</info>', OutputInterface::VERBOSITY_VERBOSE);
